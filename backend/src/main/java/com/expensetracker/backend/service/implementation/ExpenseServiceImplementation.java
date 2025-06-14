@@ -21,44 +21,60 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor // (Lombok to inject final fields automatically)
-
 public class ExpenseServiceImplementation implements ExpenseService {
     private final ExpenseRepo expenseRepository;
     private final CategoryRepo categoryRepository;
     private final UserRepo userRepository;
 
-    @Override
-    public ExpenseResponse createExpense(CreateExpenseRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-
-        Expense expense = Expense.builder()
+    private Expense fromDto(CreateExpenseRequest request) {
+        return Expense.builder()
+                .user(userRepository.findById(request.getUserId())
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found")))
+                .category(categoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found")))
                 .amount(request.getAmount())
                 .description(request.getDescription())
                 .date(request.getDate())
-                .category(category)
-                .user(user)
                 .build();
+    }
+
+    private void updateFromDto(Expense expense, UpdateExpenseRequest request){
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        expense.setUser(user);
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        expense.setCategory(category);
+        expense.setAmount(request.getAmount());
+        expense.setDescription(request.getDescription());
+        expense.setDate(request.getDate());
+    }
+
+
+    private ExpenseResponse toDto(Expense expense){
+
+        return ExpenseResponse.builder()
+                                        .id(expense.getId())
+                                        .categoryName(expense.getCategory().getName())
+                                        .expenseAmount(expense.getAmount())
+                                        .description(expense.getDescription())
+                                        .date(expense.getDate())
+                                        .build();
+
+    }
+
+    @Override
+    public ExpenseResponse createExpense(CreateExpenseRequest request) {
+        Expense expense = fromDto(request);
 
 
         Expense savedExpense = expenseRepository.save(expense);
 
 
-        ExpenseResponse response = ExpenseResponse.builder()
-                .id(savedExpense.getId())
-                .expenseAmount(savedExpense.getAmount())
-                .description(savedExpense.getDescription())
-                .date(savedExpense.getDate())
-                .categoryName(category.getName())
-                .build();
-
-
-        return response;
+        return toDto(savedExpense);
     }
 
     @Override
@@ -67,14 +83,8 @@ public class ExpenseServiceImplementation implements ExpenseService {
 
         Page<Expense> expensePage = expenseRepository.findByUserId(userId, pageRequest);
 
-        return expensePage.map(expense -> ExpenseResponse.builder()
-                .id(expense.getId())
-                .expenseAmount(expense.getAmount())
-                .description(expense.getDescription())
-                .date(expense.getDate())
-                .categoryName(expense.getCategory().getName())
-                .build()
-        );
+        return expensePage.map(this::toDto);
+
     }
 
     @Override
@@ -82,27 +92,11 @@ public class ExpenseServiceImplementation implements ExpenseService {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
 
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-
-        expense.setAmount(request.getAmount());
-        expense.setDescription(request.getDescription());
-        expense.setDate(request.getDate());
-        expense.setUser(user);
-        expense.setCategory(category);
+        updateFromDto(expense, request);
 
         Expense updatedExpense = expenseRepository.save(expense);
 
-        return ExpenseResponse.builder()
-                .id(updatedExpense.getId())
-                .expenseAmount(updatedExpense.getAmount())
-                .description(updatedExpense.getDescription())
-                .date(updatedExpense.getDate())
-                .categoryName(category.getName())
-                .build();
+        return toDto(updatedExpense);
     }
 
     @Override
@@ -117,13 +111,7 @@ public class ExpenseServiceImplementation implements ExpenseService {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
 
-        return ExpenseResponse.builder()
-                .id(expense.getId())
-                .expenseAmount(expense.getAmount())
-                .description(expense.getDescription())
-                .date(expense.getDate())
-                .categoryName(expense.getCategory().getName())
-                .build();
+        return toDto(expense);
     }
 }
 

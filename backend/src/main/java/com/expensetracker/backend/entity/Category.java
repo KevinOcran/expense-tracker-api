@@ -3,17 +3,12 @@ package com.expensetracker.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.List;
 
 @Entity
 @Table(name ="category")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class Category {
 
     @Id
@@ -23,7 +18,7 @@ public class Category {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany
-    @JoinColumn
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Expense> expenses;
+
 }

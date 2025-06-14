@@ -1,6 +1,7 @@
 package com.expensetracker.backend.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
@@ -10,8 +11,6 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class User {
 
@@ -41,5 +40,6 @@ public class User {
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Expense> expenses;
 }

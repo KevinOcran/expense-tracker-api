@@ -11,11 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name ="expense")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class Expense {
 
     @Id

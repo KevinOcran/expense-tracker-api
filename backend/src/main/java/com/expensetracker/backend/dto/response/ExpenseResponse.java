@@ -1,6 +1,7 @@
 package com.expensetracker.backend.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class ExpenseResponse {
 
     private String description;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime date;
 
     private String categoryName;

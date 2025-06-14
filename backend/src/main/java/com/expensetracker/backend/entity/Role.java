@@ -10,11 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name ="roles")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class Role {
 
     @Id
